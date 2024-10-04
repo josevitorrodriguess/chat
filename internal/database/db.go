@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/josevitorrodriguess/chat/internal/api/user/models"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -22,4 +23,11 @@ func ConnectDB() *gorm.DB {
 
 	log.Println("connection sucessfully")
 	return db
+}
+
+func RunMigrations(db *gorm.DB) {
+
+	log.Println("running migrations")
+	db.AutoMigrate(models.User{}) 
+
 }
