@@ -1,28 +1,25 @@
 package database
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func ConnectDB() *sql.DB {
+func ConnectDB() *gorm.DB {
 
 	connStr := os.Getenv("CONNECT_STRING")
 
-	db, err := sql.Open("postgres", connStr)
+	log.Println("trying to connect to database")
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Error opening database: %v\n", err)
+		log.Println("ERROR: fail to connect to database")
+		panic(err)
 	}
 
-	if err = db.Ping(); err != nil {
-		log.Fatalf("Error pinging database: %v\n", err)
-	}
-
-	fmt.Println("Successfully connected to the database!")
-
+	log.Println("connection sucessfully")
 	return db
 }
