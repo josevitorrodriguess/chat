@@ -1,7 +1,7 @@
 package service
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/josevitorrodriguess/chat/internal/api/user/models"
 	"github.com/josevitorrodriguess/chat/internal/api/user/repository"
@@ -24,11 +24,11 @@ func NewUserService(repo repository.UserRepository) UserService {
 
 func (us *userService) Create(user *models.User) (models.User, error) {
 
-	user.Password, _ = utils.HashPass(user.Password)
-
-	if user.Password == "" {
-		log.Println("ERROR: fail to encrpyt user password")
+	hashedPassword, err := utils.HashPass(user.Password)
+	if err != nil {
+		return models.User{}, fmt.Errorf("failed to encrypt password: %w", err)
 	}
+	user.Password = hashedPassword
 
 	createdUser, err := us.repo.Create(user)
 	if err != nil {
