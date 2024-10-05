@@ -23,6 +23,10 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (us *userService) Create(user *models.User) (models.User, error) {
+	// Valida o usuário antes de qualquer outra operação
+	if err := user.Validate(); err != nil {
+		return models.User{}, fmt.Errorf("validation failed: %w", err)
+	}
 
 	hashedPassword, err := utils.HashPass(user.Password)
 	if err != nil {
