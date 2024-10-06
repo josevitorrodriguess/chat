@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"github.com/josevitorrodriguess/chat/internal/api/user/models"
 	"gorm.io/gorm"
 )
@@ -8,6 +9,7 @@ import (
 type UserRepository interface {
 	Create(*models.User) (models.User, error)
 	FindAll() ([]models.User, error)
+	FindById(uuid.UUID) (models.User, error)
 }
 
 type userRepository struct {
@@ -35,4 +37,14 @@ func (ur *userRepository) FindAll() ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+func (ur *userRepository) FindById(id uuid.UUID) (models.User, error) {
+	var user models.User
+
+	if err := ur.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }
