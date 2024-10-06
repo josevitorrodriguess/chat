@@ -10,6 +10,7 @@ import (
 
 type UserService interface {
 	Create(*models.User) (models.User, error)
+	FindAll() ([]models.User, error)
 }
 
 type userService struct {
@@ -23,7 +24,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (us *userService) Create(user *models.User) (models.User, error) {
-	// Valida o usuário antes de qualquer outra operação
+
 	if err := user.Validate(); err != nil {
 		return models.User{}, fmt.Errorf("validation failed: %w", err)
 	}
@@ -40,4 +41,8 @@ func (us *userService) Create(user *models.User) (models.User, error) {
 	}
 
 	return createdUser, nil
+}
+
+func (us *userService) FindAll() ([]models.User, error) {
+	return us.repo.FindAll()
 }
