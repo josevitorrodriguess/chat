@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/josevitorrodriguess/chat/internal/api/user/models"
 	"github.com/josevitorrodriguess/chat/internal/api/user/repository"
 	"github.com/josevitorrodriguess/chat/internal/utils"
@@ -11,6 +12,7 @@ import (
 type UserService interface {
 	Create(*models.User) (models.User, error)
 	FindAll() ([]models.User, error)
+	FindById(id uuid.UUID) (models.User, error)
 }
 
 type userService struct {
@@ -45,4 +47,8 @@ func (us *userService) Create(user *models.User) (models.User, error) {
 
 func (us *userService) FindAll() ([]models.User, error) {
 	return us.repo.FindAll()
+}
+
+func (us *userService) FindById(id uuid.UUID) (models.User, error) {
+	return us.repo.FindById(id)
 }
