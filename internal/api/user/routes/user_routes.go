@@ -16,4 +16,5 @@ func UserRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	r.POST("/signUp", userController.CreateUser)
 	r.GET("/findAll", userController.FinAll)
 	r.GET("/find/:id", userController.FindById)
+	r.PUT("/update/:id", userController.Update)
 }
