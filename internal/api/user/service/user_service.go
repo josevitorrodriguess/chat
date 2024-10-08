@@ -12,7 +12,8 @@ import (
 type UserService interface {
 	Create(*models.User) (models.User, error)
 	FindAll() ([]models.User, error)
-	FindById(id uuid.UUID) (models.User, error)
+	FindById(uuid.UUID) (models.User, error)
+	Update(uuid.UUID, models.User) (models.User, error)
 }
 
 type userService struct {
@@ -51,4 +52,12 @@ func (us *userService) FindAll() ([]models.User, error) {
 
 func (us *userService) FindById(id uuid.UUID) (models.User, error) {
 	return us.repo.FindById(id)
+}
+
+func (us *userService) Update(id uuid.UUID, user models.User) (models.User, error) {
+
+	if user.Password != "" {
+		user.Password, _ = utils.HashPass(user.Password)
+	}
+	return us.repo.Update(id, user)
 }
