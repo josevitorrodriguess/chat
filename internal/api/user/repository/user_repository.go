@@ -10,6 +10,7 @@ type UserRepository interface {
 	Create(*models.User) (models.User, error)
 	FindAll() ([]models.User, error)
 	FindById(uuid.UUID) (models.User, error)
+	Update(uuid.UUID, models.User) (models.User, error)
 }
 
 type userRepository struct {
@@ -43,6 +44,15 @@ func (ur *userRepository) FindById(id uuid.UUID) (models.User, error) {
 	var user models.User
 
 	if err := ur.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (ur *userRepository) Update(id uuid.UUID, user models.User) (models.User, error) {
+
+	if err := ur.db.Model(&models.User{}).Where("id = ?", id).Updates(user).Error; err != nil {
 		return models.User{}, err
 	}
 
