@@ -11,6 +11,7 @@ type UserRepository interface {
 	FindAll() ([]models.User, error)
 	FindById(uuid.UUID) (models.User, error)
 	Update(uuid.UUID, models.User) (models.User, error)
+	Delete(uuid.UUID) error
 }
 
 type userRepository struct {
@@ -57,4 +58,11 @@ func (ur *userRepository) Update(id uuid.UUID, user models.User) (models.User, e
 	}
 
 	return user, nil
+}
+
+func (ur *userRepository) Delete(id uuid.UUID) error {
+	if err := ur.db.Delete(models.User{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }
