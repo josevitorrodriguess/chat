@@ -95,3 +95,21 @@ func (uc *userController) Update(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, updatedUser)
 }
+
+func (uc *userController) DeleteUser(ctx *gin.Context) {
+
+    idParam := ctx.Param("id")
+
+    id, err := uuid.Parse(idParam)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UUID format"})
+        return
+    }
+
+    if err := uc.serv.Delete(id); err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
