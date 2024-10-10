@@ -14,6 +14,7 @@ type UserService interface {
 	FindAll() ([]models.User, error)
 	FindById(uuid.UUID) (models.User, error)
 	Update(uuid.UUID, models.User) (models.User, error)
+	Delete(uuid.UUID) error
 }
 
 type userService struct {
@@ -60,4 +61,8 @@ func (us *userService) Update(id uuid.UUID, user models.User) (models.User, erro
 		user.Password, _ = utils.HashPass(user.Password)
 	}
 	return us.repo.Update(id, user)
+}
+
+func (us *userService) Delete(id uuid.UUID) error {
+	return us.repo.Delete(id)
 }
