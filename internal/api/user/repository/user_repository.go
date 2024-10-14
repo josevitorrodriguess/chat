@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/josevitorrodriguess/chat/internal/api/user/models"
 	"gorm.io/gorm"
@@ -12,6 +14,7 @@ type UserRepository interface {
 	FindById(uuid.UUID) (models.User, error)
 	Update(uuid.UUID, models.User) (models.User, error)
 	Delete(uuid.UUID) error
+	FindByEmail(email string) (*models.User, error)
 }
 
 type userRepository struct {
@@ -65,4 +68,20 @@ func (ur *userRepository) Delete(id uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
+	var user models.User
+
+	query := "SELECT id, username, email, password FROM client WHERE email = $1"
+	result := ur.db.Raw(query, email).Scan(&user)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, result.Error
+	}
+
+	return &user, nil
 }
