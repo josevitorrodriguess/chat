@@ -1,84 +1,51 @@
 package auth
 
 import (
-	"fmt"
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-type jwtService struct {
-	secretKey string
+// JWTService define o serviço para geração e validação de JWT
+type JWTService struct {
+	secretKey []byte
 	issuer    string
 }
 
-func NewJWT(issuer string) *jwtService {
-	return &jwtService{
-		secretKey: os.Getenv("JWT_SECRET_KEY"),
-		issuer:    "chat_api",
+// NewJWTService cria uma nova instância do JWTService
+func NewJWTService() *JWTService {
+	secret := os.Getenv("JWT_SECRET_KEY")
+	if secret == "" {
+		panic("JWT_SECRET_KEY não foi definido no .env")
+	}
+	return &JWTService{
+		secretKey: []byte(secret),  // Chave como []byte
+		issuer:    "your-app-name", // Ajuste conforme necessário
 	}
 }
 
+// Claim define as informações que estarão no token JWT
 type Claim struct {
-	Sum uuid.UUID `json:"sum"`
-	jwt.StandardClaims
+	UserID uuid.UUID `json:"user_id"`
+	jwt.RegisteredClaims
 }
 
-func (s *jwtService) GenerateToken(id uuid.UUID) (string, error) {
-
-	claim := &Claim{
-		Sum: id,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+// GenerateToken gera um JWT com base no ID do usuário
+func (s *JWTService) GenerateToken(userID uuid.UUID) (string, error) {
+	claims := &Claim{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.issuer,
-			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // Expira em 24 horas
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claim)
+	// Cria um token com o método de assinatura HS256
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(s.secretKey))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
-}
-
-func (s *jwtService) ValidateToken(tokenString string) bool {
-
-	token, err := jwt.ParseWithClaims(tokenString, &Claim{}, func(token *jwt.Token) (interface{}, error) {
-
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("invalid token")
-		}
-		return []byte(s.secretKey), nil
-
-	})
-
-	return err == nil && token.Valid
-}
-
-func (s *jwtService) GetClaims(tokenString string) (Claim, error) {
-	claims := Claim{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-		// Verifica se o método de assinatura do token é HMAC (HS256 neste caso)
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("invalid token")
-		}
-		// Retorna a chave secreta para validar o token
-		return []byte(s.secretKey), nil
-	})
-
-	if err != nil {
-		return Claim{}, err
-	}
-
-	if !token.Valid {
-		return Claim{}, fmt.Errorf("token is not valid")
-	}
-
-	return claims, nil
+	// Assina o token usando a chave secreta
+	return token.SignedString(s.secretKey)
 }
