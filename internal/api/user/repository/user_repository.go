@@ -73,7 +73,7 @@ func (ur *userRepository) Delete(id uuid.UUID) error {
 func (ur *userRepository) FindByEmail(email string) (*models.User, error) {
 	var user models.User
 
-	query := "SELECT id, username, email, password FROM client WHERE email = $1"
+	query := "SELECT id, username, email, password FROM users WHERE email = $1"
 	result := ur.db.Raw(query, email).Scan(&user)
 
 	if result.Error != nil {
