@@ -1,9 +1,11 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/josevitorrodriguess/chat/internal/api/user/models"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -11,8 +13,10 @@ import (
 )
 
 func ConnectDB() *gorm.DB {
-
+	godotenv.Load()
+	
 	connStr := os.Getenv("CONNECT_STRING")
+	fmt.Println("Connection string:", connStr)
 
 	log.Println("trying to connect to database")
 	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
@@ -28,6 +32,7 @@ func ConnectDB() *gorm.DB {
 func RunMigrations(db *gorm.DB) {
 
 	log.Println("running migrations")
-	db.AutoMigrate(models.User{}) 
+	db.AutoMigrate(models.User{})
+	db.AutoMigrate(models.Message{})
 
 }
