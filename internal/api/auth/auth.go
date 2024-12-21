@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -16,6 +17,7 @@ type JWTService struct {
 
 // NewJWTService cria uma nova instância do JWTService
 func NewJWTService() *JWTService {
+	
 	secret := os.Getenv("JWT_SECRET_KEY")
 	if secret == "" {
 		panic("JWT_SECRET_KEY não foi definido no .env")
@@ -48,4 +50,32 @@ func (s *JWTService) GenerateToken(userID uuid.UUID) (string, error) {
 
 	// Assina o token usando a chave secreta
 	return token.SignedString(s.secretKey)
+}
+
+// ValidateToken valida um token JWT e retorna as reivindicações (claims)
+func (s *JWTService) ValidateToken(tokenString string) (*Claim, error) {
+	// Parse o token usando a chave secreta
+	token, err := jwt.ParseWithClaims(tokenString, &Claim{}, func(token *jwt.Token) (interface{}, error) {
+		// Verifica se o método de assinatura é HS256
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("método de assinatura inválido")
+		}
+		return s.secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Verifica se o token é válido
+	if claims, ok := token.Claims.(*Claim); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("token inválido ou expirado")
+}
+
+func (s *JWTService) IsValidToken(tokenString string) bool {
+	_, err := s.ValidateToken(tokenString)
+	return err == nil
 }
